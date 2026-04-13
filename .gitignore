@@ -1,0 +1,9 @@
+# Binaries
+*.exe
+*.out
+
+# Go build cache
+/bin/
+
+# OS files
+.DS_Store
