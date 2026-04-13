@@ -7,3 +7,6 @@
 
 # OS files
 .DS_Store
+
+#ignore config file
+.gatorconfig.json

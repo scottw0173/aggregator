@@ -1,5 +1,4 @@
 package main
 
-func main() error {
-	return nil
+func main() {
 }
