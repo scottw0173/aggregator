@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"github.com/scottw0173/aggregator/internal/config"
+	"github.com/scottw0173/aggregator/internal/database"
 )
 
 type state struct {
-	currentCfg *config.Config
+	db  *database.Queries
+	cfg *config.Config
 }
 
 type command struct {
@@ -28,7 +30,7 @@ func handlerLogin(s *state, cmd command) error {
 
 	username := cmd.args[0]
 
-	if err := s.currentCfg.SetUser(username); err != nil {
+	if err := s.cfg.SetUser(username); err != nil {
 		return err
 	}
 	fmt.Printf("username successfully set to %s\n", username)

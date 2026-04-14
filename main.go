@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/scottw0173/aggregator/internal/config"
+	"github.com/scottw0173/aggregator/internal/database"
 )
 
 func main() {
@@ -12,20 +15,24 @@ func main() {
 	if err != nil {
 		fmt.Println("error creating config")
 	}
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		fmt.Println(err)
+	}
+	dbQueries := database.New(db)
 
 	newState := state{
-		currentCfg: &cfg,
+		db:  dbQueries,
+		cfg: &cfg,
 	}
 
 	cmds := commands{
 		handlers: make(map[string]handlerFunc),
 	}
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	args := os.Args
-	//for _, arg := range args {
-	//	fmt.Println(arg)
-	//}
 
 	if len(args) < 2 {
 		fmt.Println("too few arguments")
