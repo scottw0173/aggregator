@@ -82,3 +82,27 @@ func (c *commands) register(name string, f func(*state, command) error) error {
 	c.handlers[name] = f
 	return nil
 }
+
+func handlerReset(s *state, cmd command) error {
+	if err := s.db.DeleteAllUsers(context.Background()); err != nil {
+		return err
+	}
+	fmt.Println("database successfully reset")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	usersList, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range usersList {
+		if user == s.cfg.UserName {
+			fmt.Printf("* %s (current)\n", user)
+		} else {
+			fmt.Printf("* %s\n", user)
+		}
+	}
+	return nil
+}
