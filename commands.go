@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/scottw0173/aggregator/internal/config"
 	"github.com/scottw0173/aggregator/internal/database"
 )
@@ -29,11 +32,38 @@ func handlerLogin(s *state, cmd command) error {
 	}
 
 	username := cmd.args[0]
+	_, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("user: %s is not registered with db", username)
+	}
 
 	if err := s.cfg.SetUser(username); err != nil {
 		return err
 	}
 	fmt.Printf("username successfully set to %s\n", username)
+	return nil
+}
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("missing name")
+	}
+
+	user := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+	}
+	newUser, err := s.db.CreateUser(context.Background(), user)
+	if err != nil {
+		return err
+	}
+
+	s.cfg.SetUser(cmd.args[0])
+
+	fmt.Printf("user successfully created: %s\n", cmd.args[0])
+	fmt.Println(newUser)
 	return nil
 }
 
