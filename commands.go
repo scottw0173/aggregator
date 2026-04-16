@@ -26,20 +26,6 @@ type commands struct {
 	handlers map[string]handlerFunc
 }
 
-func middlewareLoggedIn(
-	handler func(*state, command, database.User) error,
-) func(*state, command) error {
-
-	return func(s *state, cmd command) error {
-		user, err := s.db.GetUser(context.Background(), s.cfg.UserName)
-		if err != nil {
-			return err
-		}
-
-		return handler(s, cmd, user)
-	}
-}
-
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("login requires exactly one argument")
@@ -138,27 +124,6 @@ func handlerAgg(s *state, cmd command) error {
 		if err := scrapeFeeds(s); err != nil {
 			fmt.Println("scrape error:", err)
 		}
-	}
-	return nil
-}
-
-func scrapeFeeds(s *state) error {
-	nextFeed, err := s.db.GetNextFeedToFetch(context.Background())
-	if err != nil {
-		return err
-	}
-
-	if err := s.db.MarkFeedFetched(context.Background(), nextFeed.ID); err != nil {
-		return err
-	}
-	feed, err := fetchFeed(context.Background(), nextFeed.Url)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(feed.Channel.Title)
-	for _, title := range feed.Channel.Item {
-		fmt.Println(title.Title)
 	}
 	return nil
 }
