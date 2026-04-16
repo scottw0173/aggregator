@@ -116,3 +116,110 @@ func handlerAgg(s *state, cmd command) error {
 	fmt.Print(rss)
 	return nil
 }
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) < 2 {
+		return fmt.Errorf("need two arguments: name and url")
+	}
+	userID, err := s.db.GetUserID(context.Background(), s.cfg.UserName)
+	if err != nil {
+		return err
+	}
+
+	newFeed := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		UserID:    userID,
+	}
+
+	if _, err := s.db.CreateFeed(context.Background(), newFeed); err != nil {
+		return err
+	}
+	newFollowRow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    userID,
+		FeedID:    newFeed.ID,
+	}
+	newFeedFollowRow, err := s.db.CreateFeedFollow(context.Background(), newFollowRow)
+	if err != nil {
+		return err
+	}
+	fmt.Println(newFeedFollowRow.FeedName)
+	fmt.Println(newFeedFollowRow.UserName)
+	return nil
+}
+
+func handlerFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeedsInfo(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("FeedName: %s\n", feed.Name)
+		fmt.Printf("FeedURL: %s\n", feed.Url)
+		fmt.Printf("UserName: %s\n", feed.Name_2)
+	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("command 'follow' need one argument: URL")
+	}
+
+	feedID, err := s.db.GetFeedID(context.Background(), cmd.args[0])
+	if err != nil {
+		return err
+	}
+	userID, err := s.db.GetUserID(context.Background(), s.cfg.UserName)
+	if err != nil {
+		return err
+	}
+
+	newFollowRow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    userID,
+		FeedID:    feedID,
+	}
+	newFeedFollowRow, err := s.db.CreateFeedFollow(context.Background(), newFollowRow)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(newFeedFollowRow.FeedName)
+	fmt.Println(newFeedFollowRow.UserName)
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	var userName string
+	if len(cmd.args) == 0 {
+		userName = s.cfg.UserName
+	} else {
+		userName = cmd.args[0]
+	}
+
+	userID, err := s.db.GetUserID(context.Background(), userName)
+	if err != nil {
+		return err
+	}
+
+	followingList, err := s.db.GetFeedFollowsForUser(context.Background(), userID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("User: %s\nis following\n", userName)
+	for _, item := range followingList {
+		fmt.Printf("*%s\n", item)
+	}
+	return nil
+}
