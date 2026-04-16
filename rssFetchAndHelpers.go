@@ -93,11 +93,12 @@ func scrapeFeeds(s *state) error {
 		return err
 	}
 
-	if err := s.db.MarkFeedFetched(context.Background(), nextFeed.ID); err != nil {
-		return err
-	}
 	feed, err := fetchFeed(context.Background(), nextFeed.Url)
 	if err != nil {
+		return err
+	}
+
+	if err := s.db.MarkFeedFetched(context.Background(), nextFeed.ID); err != nil {
 		return err
 	}
 
