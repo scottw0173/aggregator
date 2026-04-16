@@ -134,8 +134,10 @@ func handlerAgg(s *state, cmd command) error {
 	ticker := time.NewTicker(timeBetweenRequests)
 	defer ticker.Stop()
 
-	for ; ; <-ticker.C {
-		scrapeFeeds(s)
+	for range ticker.C {
+		if err := scrapeFeeds(s); err != nil {
+			fmt.Println("scrape error:", err)
+		}
 	}
 	return nil
 }
