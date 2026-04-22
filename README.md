@@ -31,7 +31,7 @@ go install github.com/pressly/goose/v3/cmd/goose@latest
 goose postgres "postgres://username:password@localhost:5432/dbname?sslmode=disable" up
 ```
 
-#you will need to run this up migration 5 times to create the tables/relationships for the database
+#you will need to run this up migration 5 times to create the tables/relationships for the database from inside of the sql/schema directory
 
 ### Configuration
 Create a `.gatorconfig.json` file in your home directory (not in the project directory):
